@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - {{ app_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">
+            <i class="bi bi-speedometer2 text-primary me-2"></i>Journey Dashboard
+        </h2>
+        <p class="text-muted small mb-0">Track expected booking dates and manage your upcoming train journeys.</p>
+    </div>
+    <div class="mt-3 mt-md-0">
+        <a href="{{ url_for('main.add_journey') }}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Add New Journey
+        </a>
+    </div>
+</div>
+
+<!-- Summary Statistics Metrics -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white h-100">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="rounded-circle bg-primary-subtle text-primary p-3 me-3">
+                    <i class="bi bi-train-lightrail-front fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted mb-0 small text-uppercase fw-bold">Total Trips</h6>
+                    <h3 class="fw-bold text-dark mb-0">{{ stats.total_journeys }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white h-100">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="rounded-circle bg-danger-subtle text-danger p-3 me-3">
+                    <i class="bi bi-alarm-fill fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted mb-0 small text-uppercase fw-bold">Booking Today</h6>
+                    <h3 class="fw-bold text-danger mb-0">{{ stats.booking_today }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white h-100">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="rounded-circle bg-warning-subtle text-warning p-3 me-3">
+                    <i class="bi bi-hourglass-split fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted mb-0 small text-uppercase fw-bold">Booking Soon</h6>
+                    <h3 class="fw-bold text-dark mb-0">{{ stats.booking_soon }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white h-100">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="rounded-circle bg-success-subtle text-success p-3 me-3">
+                    <i class="bi bi-bell-fill fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted mb-0 small text-uppercase fw-bold">Reminders Active</h6>
+                    <h3 class="fw-bold text-success mb-0">{{ stats.active_reminders }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search, Filter & Sort Controls Card -->
+<div class="card border-0 shadow-sm rounded-3 mb-4 bg-white">
+    <div class="card-body p-3">
+        <form method="GET" action="{{ url_for('main.dashboard') }}" class="row g-2 align-items-center">
+            <!-- Search Query Input -->
+            <div class="col-12 col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0 bg-light" placeholder="Search by trip, station, or train..." value="{{ search_query }}">
+                </div>
+            </div>
+
+            <!-- Filter Dropdown -->
+            <div class="col-6 col-md-3">
+                <select name="status" class="form-select bg-light">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                    <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Upcoming Booking</option>
+                    <option value="passed" {% if status_filter == 'passed' %}selected{% endif %}>Booking Date Passed</option>
+                    <option value="reminder" {% if status_filter == 'reminder' %}selected{% endif %}>Active Reminders Only</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed Journeys</option>
+                </select>
+            </div>
+
+            <!-- Sort Dropdown -->
+            <div class="col-6 col-md-3">
+                <select name="sort" class="form-select bg-light">
+                    <option value="booking_date" {% if sort_by == 'booking_date' %}selected{% endif %}>Sort: Booking Date</option>
+                    <option value="journey_date" {% if sort_by == 'journey_date' %}selected{% endif %}>Sort: Journey Date</option>
+                    <option value="trip_name" {% if sort_by == 'trip_name' %}selected{% endif %}>Sort: Trip Name</option>
+                </select>
+            </div>
+
+            <!-- Submit & Reset Buttons -->
+            <div class="col-12 col-md-1 text-end">
+                <button type="submit" class="btn btn-primary w-100" title="Apply Filter"><i class="bi bi-funnel"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Journey Cards Grid -->
+{% if journeys %}
+    <div class="row g-4">
+        {% for journey in journeys %}
+            <div class="col-12 col-md-6 col-lg-4">
+                {% include 'components/journey_card.html' %}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <!-- Empty State -->
+    <div class="card border-0 shadow-sm rounded-3 py-5 text-center bg-white">
+        <div class="card-body">
+            <div class="mb-3 text-muted">
+                <i class="bi bi-journal-x display-1 text-secondary opacity-50"></i>
+            </div>
+            <h4 class="fw-bold text-dark">No Journeys Found</h4>
+            {% if search_query or status_filter != 'all' %}
+                <p class="text-muted">No trips matched your search filter criteria.</p>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary me-2">Clear Filters</a>
+            {% else %}
+                <p class="text-muted">You haven't saved any planned train journeys yet.</p>
+                <a href="{{ url_for('main.add_journey') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Add Your First Journey
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

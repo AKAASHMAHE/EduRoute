@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Home - {{ app_name }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row align-items-center py-5 hero-section bg-white rounded-3 shadow-sm px-4 mb-5 border">
+    <div class="col-lg-7 text-center text-lg-start mb-4 mb-lg-0">
+        <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-2 rounded-pill fs-7 mb-3 fw-semibold">
+            <i class="bi bi-calendar-event me-1"></i> {{ booking_window }}-Day Advance Booking Calculator
+        </span>
+        <h1 class="display-4 fw-bold text-dark mb-3">Never Miss Your Train Booking Opening Date</h1>
+        <p class="lead text-muted mb-4">
+            Easily plan your train trips, automatically calculate expected ticket booking dates based on official advance booking rules, and track upcoming journeys all in one place.
+        </p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center justify-content-lg-start">
+            <a href="{{ url_for('main.add_journey') }}" class="btn btn-primary btn-lg px-4 me-sm-2 shadow-sm">
+                <i class="bi bi-plus-circle me-2"></i>Plan Your Journey
+            </a>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary btn-lg px-4">
+                <i class="bi bi-speedometer2 me-2"></i>View Dashboard
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-5 text-center">
+        <!-- Interactive Quick Date Calculator Card -->
+        <div class="card border-0 shadow rounded-4 p-3 bg-light">
+            <div class="card-body">
+                <h5 class="card-title fw-bold text-primary mb-3">
+                    <i class="bi bi-calculator me-2"></i>Quick Booking Date Calculator
+                </h5>
+                <p class="small text-muted mb-3">Select your planned travel date to see when booking opens.</p>
+
+                <div class="mb-3 text-start">
+                    <label for="quick_journey_date" class="form-label small fw-bold text-dark">Planned Journey Date</label>
+                    <input type="date" id="quick_journey_date" class="form-control form-control-lg" min="{{ today_str }}">
+                </div>
+
+                <div id="quick_calc_result" class="alert alert-primary d-none mb-0">
+                    <small class="d-block text-uppercase fw-bold text-muted">Expected Booking Date</small>
+                    <h4 id="quick_calc_date" class="fw-bold mb-1 text-primary"></h4>
+                    <span id="quick_calc_status" class="badge rounded-pill"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row text-center g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm rounded-3 p-3">
+            <div class="card-body">
+                <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="bi bi-clock-history fs-3"></i>
+                </div>
+                <h5 class="fw-bold">Automated Window Math</h5>
+                <p class="text-muted small">
+                    Calculates exact booking opening dates configured dynamically (e.g. {{ booking_window }} days ahead) handling leap years and month boundaries accurately.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm rounded-3 p-3">
+            <div class="card-body">
+                <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="bi bi-bell-fill fs-3"></i>
+                </div>
+                <h5 class="fw-bold">Smart Status Tracking</h5>
+                <p class="text-muted small">
+                    Tracks days remaining, alerts when booking day has arrived, and provides reminder status badges for all your planned journeys.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm rounded-3 p-3">
+            <div class="card-body">
+                <div class="feature-icon bg-info text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="bi bi-journal-bookmark-fill fs-3"></i>
+                </div>
+                <h5 class="fw-bold">Organized Itineraries</h5>
+                <p class="text-muted small">
+                    Manage all your upcoming trips in one central dashboard. Filter, search, and edit journey details with ease.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Explanatory Note Section -->
+<div class="card bg-primary-subtle border-primary border-opacity-25 rounded-3 mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-start">
+            <i class="bi bi-info-circle-fill text-primary fs-3 me-3"></i>
+            <div>
+                <h5 class="fw-bold text-dark mb-1">Important Note on Booking Opening Dates</h5>
+                <p class="text-secondary mb-0 small">
+                    This system calculates the <strong>Expected Booking Opening Date</strong> based on the configured advance booking window (default: {{ booking_window }} days). Actual ticket availability depends on railway platforms. Always verify final availability directly on official railway portals when your booking date arrives.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,117 @@
+<div class="card h-100 shadow-sm border-0 journey-card rounded-3">
+    <div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+        <h5 class="card-title text-primary fw-bold mb-0 text-truncate" title="{{ journey.trip_name }}">
+            <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ journey.trip_name }}
+        </h5>
+        <span class="badge {{ journey.status_class }} px-2 py-1 fs-7 rounded-pill">
+            {{ journey.status_text }}
+        </span>
+    </div>
+    <div class="card-body">
+        <!-- Station Route -->
+        <div class="route-display p-2 bg-light rounded-3 mb-3 text-center">
+            <div class="row align-items-center g-1">
+                <div class="col-5 text-truncate fw-semibold text-dark fs-6" title="{{ journey.source }}">
+                    {{ journey.source }}
+                </div>
+                <div class="col-2 text-primary fs-5">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+                <div class="col-5 text-truncate fw-semibold text-dark fs-6" title="{{ journey.destination }}">
+                    {{ journey.destination }}
+                </div>
+            </div>
+            {% if journey.train_name %}
+                <div class="small text-muted mt-1">
+                    <i class="bi bi-train-front me-1"></i>{{ journey.train_name }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Key Dates Grid -->
+        <div class="row text-center g-2 mb-3">
+            <div class="col-6">
+                <div class="p-2 border rounded bg-white">
+                    <small class="text-muted d-block text-uppercase fw-bold fs-8">Journey Date</small>
+                    <span class="fw-bold text-dark">{{ journey.journey_date_formatted }}</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="p-2 border rounded bg-light-primary">
+                    <small class="text-muted d-block text-uppercase fw-bold fs-8">Expected Booking</small>
+                    <span class="fw-bold text-primary">{{ journey.expected_booking_date_formatted }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Days Remaining Info -->
+        <div class="mb-2">
+            {% if journey.status_code == 'JOURNEY_COMPLETED' %}
+                <div class="text-secondary small text-center">
+                    <i class="bi bi-check-all me-1"></i>Journey completed
+                </div>
+            {% elif journey.days_until_booking < 0 %}
+                <div class="text-warning text-dark small text-center fw-semibold">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Booking date has passed — check railway portal
+                </div>
+            {% elif journey.days_until_booking == 0 %}
+                <div class="text-danger small text-center fw-bold">
+                    <i class="bi bi-alarm-fill me-1"></i>Booking opens TODAY!
+                </div>
+            {% else %}
+                <div class="text-primary small text-center fw-semibold">
+                    <i class="bi bi-hourglass-split me-1"></i>Booking opens in <strong>{{ journey.days_until_booking }}</strong> days
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card-footer bg-white border-top-0 pt-0 pb-3 d-flex justify-content-between align-items-center">
+        <!-- Reminder Status Toggle -->
+        <form action="{{ url_for('main.toggle_reminder', journey_id=journey.id) }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-sm {% if journey.reminder_enabled %}btn-outline-success{% else %}btn-outline-secondary{% endif %} rounded-pill" title="Toggle Reminder">
+                <i class="bi {% if journey.reminder_enabled %}bi-bell-fill{% else %}bi-bell-slash{% endif %} me-1"></i>
+                {% if journey.reminder_enabled %}Reminder On{% else %}Reminder Off{% endif %}
+            </button>
+        </form>
+
+        <!-- Action Links -->
+        <div>
+            <a href="{{ url_for('main.journey_detail', journey_id=journey.id) }}" class="btn btn-sm btn-outline-primary me-1" title="View Details">
+                <i class="bi bi-eye"></i>
+            </a>
+            <a href="{{ url_for('main.edit_journey', journey_id=journey.id) }}" class="btn btn-sm btn-outline-secondary me-1" title="Edit Journey">
+                <i class="bi bi-pencil"></i>
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ journey.id }}" title="Delete Journey">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal{{ journey.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ journey.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-header-title modal-title fs-6" id="deleteModalLabel{{ journey.id }}">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the journey <strong>"{{ journey.trip_name }}"</strong> ({{ journey.source }} to {{ journey.destination }})?
+                This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('main.delete_journey', journey_id=journey.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Delete Permanently
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

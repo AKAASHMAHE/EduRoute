@@ -1,0 +1,30 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center font-weight-bold" href="{{ url_for('main.index') }}">
+            <i class="bi bi-train-front-fill me-2 fs-4"></i>
+            <span>{{ app_name }}</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'main.index' %}active fw-semibold{% endif %}" href="{{ url_for('main.index') }}">
+                        <i class="bi bi-house-door me-1"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active fw-semibold{% endif %}" href="{{ url_for('main.dashboard') }}">
+                        <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+                    <a class="btn btn-light text-primary fw-semibold shadow-sm px-3" href="{{ url_for('main.add_journey') }}">
+                        <i class="bi bi-plus-circle-fill me-1"></i> Add Journey
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
