@@ -33,3 +33,19 @@ class Config:
     APPLICATION_NAME = os.getenv("APPLICATION_NAME", "Train Booking Date Reminder System")
 
     ITEMS_PER_PAGE = 10
+
+    # PDF Processing & Upload Security
+    MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", 10 * 1024 * 1024))  # 10 MB limit
+    ACADEMIC_CALENDAR_UPLOAD_DIR = os.getenv(
+        "ACADEMIC_CALENDAR_UPLOAD_DIR",
+        str(BASE_DIR / "instance" / "uploads" / "academic_calendars"),
+    )
+
+    # Google OAuth & Calendar Integration
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+    GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
+    GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://127.0.0.1:5000/google/callback")
+    GOOGLE_CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID", "primary")
+    CALENDAR_EVENT_TIMEZONE = os.getenv("CALENDAR_EVENT_TIMEZONE", "Asia/Kolkata")
+    CALENDAR_EVENT_HOUR = int(os.getenv("CALENDAR_EVENT_HOUR", 9))
+

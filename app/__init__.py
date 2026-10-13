@@ -65,8 +65,8 @@ def create_app(config_class=Config):
             format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         )
 
-    # Initialize database tables automatically within app context
-    with app.app_context():
-        db.create_all()
+    # Initialize database tables and migrations automatically within app context
+    from app.database.migration import run_migrations
+    run_migrations(app)
 
     return app

@@ -14,11 +14,27 @@ class Journey(db.Model):
     train_name = db.Column(db.String(120), nullable=True)
     journey_date = db.Column(db.Date, nullable=False, index=True)
     reminder_enabled = db.Column(db.Boolean, default=True, nullable=False)
+    holiday_id = db.Column(
+        db.Integer,
+        db.ForeignKey("holidays.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
+    # Relationship to sync record
+    sync_record = db.relationship(
+        "CalendarEventSync",
+        backref="journey",
+        uselist=False,
+        cascade="all, delete-orphan",
+        lazy="joined",
+    )
+
     def to_dict(self):
         """Convert journey model instance to dictionary representation."""
+        sync_info = self.sync_record.to_dict() if self.sync_record else None
         return {
             "id": self.id,
             "trip_name": self.trip_name,
@@ -27,6 +43,10 @@ class Journey(db.Model):
             "train_name": self.train_name,
             "journey_date": self.journey_date.isoformat() if self.journey_date else None,
             "reminder_enabled": self.reminder_enabled,
+            "holiday_id": self.holiday_id,
+            "holiday_name": self.holiday.name if self.holiday else None,
+            "sync_status": sync_info.get("status") if sync_info else "NOT_SYNCED",
+            "sync_info": sync_info,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
