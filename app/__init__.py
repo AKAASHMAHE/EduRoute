@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template
 from config import Config
 from app.models import db
+from app.utils.csrf import csrf
 from app.routes.main import main_bp
 from app.routes.api import api_bp
 from app.utils.helpers import format_date_human
@@ -24,6 +25,10 @@ def create_app(config_class=Config):
 
     # Initialize SQLAlchemy database extension
     db.init_app(app)
+
+    # Initialize CSRF Protection
+    csrf.init_app(app)
+    csrf.exempt(api_bp)
 
     # Register Blueprints
     app.register_blueprint(main_bp)
@@ -51,7 +56,7 @@ def create_app(config_class=Config):
 
     @app.errorhandler(400)
     def bad_request_error(error):
-        return render_template("404.html", error="Bad request"), 400
+        return render_template("400.html", error=getattr(error, "description", "Bad request")), 400
 
     # Configure Application Logging
     if not app.debug and not app.testing:

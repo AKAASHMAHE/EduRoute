@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from app.models import db, Journey
 from app.services.booking_service import enrich_journey_data, calculate_booking_date
@@ -142,7 +142,7 @@ def edit_journey(journey_id):
         journey.train_name = form_data.get("train_name", "").strip() or None
         journey.journey_date = journey_date_obj
         journey.reminder_enabled = reminder_enabled
-        journey.updated_at = datetime.utcnow()
+        journey.updated_at = datetime.now(timezone.utc)
 
         db.session.commit()
 
@@ -185,7 +185,7 @@ def toggle_reminder(journey_id):
     """Toggle reminder enabled/disabled for a journey."""
     journey = db.get_or_404(Journey, journey_id)
     journey.reminder_enabled = not journey.reminder_enabled
-    journey.updated_at = datetime.utcnow()
+    journey.updated_at = datetime.now(timezone.utc)
     db.session.commit()
 
     status_str = "enabled" if journey.reminder_enabled else "disabled"

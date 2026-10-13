@@ -33,3 +33,13 @@
 3. **[MEDIUM] Untested API Endpoints & Gaps:** No automated test coverage for `GET /api/v1/journeys`, `GET /api/v1/journeys/<id>` (valid and 404), and `POST /api/v1/calculate-booking-date` bad input handling.
 4. **[LOW] Deprecated `datetime.utcnow()`:** `Journey` model and route handlers trigger SQLAlchemy/Python 3.12+ `DeprecationWarning` by using `datetime.utcnow()` instead of timezone-aware UTC datetime.
 5. **[LOW] 400 Bad Request Error Handler Misalignment:** `@app.errorhandler(400)` renders `404.html` instead of a 400-specific or standard error message.
+
+---
+
+## 3. Stage 2 Fix Summary & Verification
+
+- **CSRF Protection Implemented:** Built-in modular `CSRFProtect` utility with cryptographic session tokens, injected into all forms/templates (`add_journey`, `edit_journey`, `journey_card`, `journey_detail`, `base.html`), API endpoints properly exempted. Verified via automated test `test_csrf_protection_enforcement`.
+- **Debug Flag Fixed:** Changed `config.py` default to `DEBUG = False`.
+- **Deprecation Warnings Resolved:** Replaced `datetime.utcnow()` with `datetime.now(timezone.utc)` across `Journey` model and route handlers. Zero warnings reported during pytest.
+- **Error Handler Fixed:** Added `400.html` and bound 400 handler to render appropriate bad request template.
+- **Test Suite Extended:** Added 5 new tests covering API journeys list & detail, bad calculate inputs, toggle reminder, dashboard search/filter, and CSRF protection. Test count increased from 22 to 27 (100% passing).

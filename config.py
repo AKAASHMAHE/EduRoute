@@ -23,7 +23,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
+    DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
     HOST = os.getenv("HOST", "127.0.0.1")
     PORT = int(os.getenv("PORT", 5000))
 
