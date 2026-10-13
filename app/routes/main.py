@@ -272,7 +272,17 @@ def edit_journey(journey_id):
 
         db.session.commit()
 
-        flash(f"Journey '{journey.trip_name}' updated successfully!", "success")
+        # Update synced calendar event if connected
+        from app.services.google_calendar_service import is_google_connected, sync_journey_to_calendar
+        sync_msg = ""
+        if is_google_connected() and journey.sync_record and journey.sync_record.event_id:
+            sync_ok, status, msg = sync_journey_to_calendar(journey.id)
+            if sync_ok:
+                sync_msg = " Google Calendar event updated."
+            else:
+                sync_msg = f" Note: Google Calendar update encountered an issue ({msg})."
+
+        flash(f"Journey '{journey.trip_name}' updated successfully!{sync_msg}", "success")
         return redirect(url_for("main.journey_detail", journey_id=journey.id))
 
     # Pre-populate form data for GET request
@@ -296,9 +306,14 @@ def edit_journey(journey_id):
 
 @main_bp.route("/journey/<int:journey_id>/delete", methods=["POST"])
 def delete_journey(journey_id):
-    """Delete a journey. Requires POST method for security."""
+    """Delete a journey. Removes external Google Calendar event if synchronized."""
     journey = db.get_or_404(Journey, journey_id)
     trip_name = journey.trip_name
+
+    # Handle external event cleanup
+    from app.services.google_calendar_service import delete_calendar_event_for_journey
+    delete_calendar_event_for_journey(journey.id)
+
     db.session.delete(journey)
     db.session.commit()
 

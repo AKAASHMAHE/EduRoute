@@ -7,6 +7,8 @@ from app.utils.csrf import csrf
 from app.routes.main import main_bp
 from app.routes.api import api_bp
 from app.routes.academic_calendar import calendar_bp
+from app.routes.google_auth import google_bp
+from app.services.google_calendar_service import is_google_connected
 from app.utils.helpers import format_date_human
 
 
@@ -35,6 +37,7 @@ def create_app(config_class=Config):
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(calendar_bp)
+    app.register_blueprint(google_bp)
 
     # Custom Jinja filters and context processors
     app.jinja_env.filters["format_date"] = format_date_human
@@ -44,6 +47,7 @@ def create_app(config_class=Config):
         return {
             "app_name": app.config.get("APPLICATION_NAME", "Train Booking Date Reminder System"),
             "booking_window": app.config.get("BOOKING_WINDOW_DAYS", 60),
+            "google_connected": is_google_connected(),
         }
 
     # Error Handlers

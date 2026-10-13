@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Google Calendar Integration - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Google Calendar Integration</li>
+            </ol>
+        </nav>
+
+        <!-- Main Integration Card -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h4 class="card-title fw-bold text-dark mb-0">
+                    <i class="bi bi-google text-danger me-2"></i>Google Calendar Integration
+                </h4>
+                {% if connected %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
+                        <i class="bi bi-check-circle-fill me-1"></i>Connected
+                    </span>
+                {% else %}
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 rounded-pill">
+                        <i class="bi bi-x-circle me-1"></i>Not Connected
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="card-body p-4">
+                {% if not has_client_secrets %}
+                    <div class="alert alert-warning border-0 rounded-3 mb-4">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                        <strong>Configuration Needed:</strong> Google OAuth credentials (<code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code>) are not configured in your environment or <code>.env</code> file. To connect with live Google services, obtain OAuth 2.0 credentials from Google Cloud Console.
+                    </div>
+                {% endif %}
+
+                {% if connected %}
+                    <!-- Connection Details -->
+                    <div class="p-4 bg-light rounded-3 mb-4 border">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <small class="text-muted text-uppercase fw-bold d-block">Authorized Account</small>
+                                <span class="fw-bold text-dark fs-5">{{ connection.user_email or 'Primary User' }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted text-uppercase fw-bold d-block">Connected On</small>
+                                <span class="fw-semibold text-dark">
+                                    {{ connection.connected_at.strftime('%d %b %Y, %I:%M %p') if connection.connected_at else '--' }}
+                                </span>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted text-uppercase fw-bold d-block">Target Calendar</small>
+                                <code>{{ calendar_id }}</code>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted text-uppercase fw-bold d-block">Event Timezone</small>
+                                <span class="fw-semibold">{{ timezone }}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted text-uppercase fw-bold d-block">Reminder Schedule</small>
+                                <span class="fw-semibold">{{ event_hour }}:00 AM (1 day & 1 hour prior)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disconnect Form -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <p class="text-muted small mb-0">
+                            Disconnecting will remove saved tokens. Any events already created on your Google Calendar will remain untouched.
+                        </p>
+                        <form action="{{ url_for('google.disconnect') }}" method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-power me-1"></i> Disconnect Calendar
+                            </button>
+                        </form>
+                    </div>
+
+                {% else %}
+                    <!-- Connect Callout -->
+                    <div class="text-center py-4 mb-4">
+                        <div class="display-4 text-primary mb-3">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Connect Google Calendar for Automated Booking Reminders</h5>
+                        <p class="text-muted mx-auto" style="max-width: 580px;">
+                            When authorized, this application will create calendar events with alerts on your expected train booking opening dates, so you never miss an IRCTC booking window.
+                        </p>
+                        <a href="{{ url_for('google.connect') }}" class="btn btn-primary btn-lg px-4 shadow-sm">
+                            <i class="bi bi-google me-2"></i> Connect Google Calendar
+                        </a>
+                    </div>
+
+                    <div class="card bg-light border-0 rounded-3 mb-4">
+                        <div class="card-body p-3">
+                            <h6 class="fw-bold mb-2"><i class="bi bi-shield-check text-success me-1"></i>Security & Scopes</h6>
+                            <ul class="small text-muted mb-0 ps-3">
+                                <li><strong>Minimal Scope Requested:</strong> <code>https://www.googleapis.com/auth/calendar.events</code> (used solely to add and manage booking reminder events).</li>
+                                <li><strong>Secure Tokens:</strong> OAuth tokens and refresh keys are stored securely on server storage and never exposed in HTML, client JavaScript, or logs.</li>
+                                <li><strong>One-Click Disconnect:</strong> You can disconnect and revoke access at any time from this page.</li>
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Synchronization Summary Cards -->
+                <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-steps me-1"></i>Synchronization Status</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-4 col-md-2">
+                        <div class="p-3 border rounded text-center bg-light">
+                            <small class="text-muted text-uppercase fw-bold d-block fs-8">Total</small>
+                            <span class="fs-4 fw-bold text-dark">{{ stats.total }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md-2">
+                        <div class="p-3 border rounded text-center bg-success-subtle">
+                            <small class="text-success text-uppercase fw-bold d-block fs-8">Synced</small>
+                            <span class="fs-4 fw-bold text-success">{{ stats.synced }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md-2">
+                        <div class="p-3 border rounded text-center bg-light">
+                            <small class="text-muted text-uppercase fw-bold d-block fs-8">Not Synced</small>
+                            <span class="fs-4 fw-bold text-secondary">{{ stats.not_synced }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md-2">
+                        <div class="p-3 border rounded text-center bg-danger-subtle">
+                            <small class="text-danger text-uppercase fw-bold d-block fs-8">Failed</small>
+                            <span class="fs-4 fw-bold text-danger">{{ stats.failed }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md-2">
+                        <div class="p-3 border rounded text-center bg-warning-subtle">
+                            <small class="text-warning text-dark text-uppercase fw-bold d-block fs-8">Missing</small>
+                            <span class="fs-4 fw-bold text-warning text-dark">{{ stats.missing }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md-2">
+                        <div class="p-3 border rounded text-center bg-info-subtle">
+                            <small class="text-info text-uppercase fw-bold d-block fs-8">Reauth</small>
+                            <span class="fs-4 fw-bold text-info">{{ stats.reauth }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-light border small text-muted mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    <strong>Notification Delivery:</strong> Calendar event creation ensures the reminder is scheduled on your calendar. Exact pop-up or notification timing also depends on device sync settings and Google Calendar client permissions.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
