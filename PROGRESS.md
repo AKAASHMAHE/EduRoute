@@ -13,3 +13,7 @@ Next: STAGE 4 - PDF UPLOAD + HOLIDAY EXTRACTION + REVIEW (Sections 7, 8: PDF upl
 Stage: STAGE 4 - PDF UPLOAD + HOLIDAY EXTRACTION + REVIEW
 Result: Built PDF upload with %PDF signature and size checks, text extraction with PyMuPDF/fallback, multi-format holiday detection, review/edit/bulk confirm UI, and non-destructive reprocessing; 33/33 tests pass.
 Next: STAGE 5 - HOLIDAY-BASED JOURNEY PLANNING (Section 9: List confirmed holidays, travel date picker inside range, trip details form with live preview, reject unconfirmed/duplicates, link Journey to Holiday).
+
+Stage: STAGE 5 - HOLIDAY-BASED JOURNEY PLANNING
+Result: Built confirmed holiday journey planner, multi-day departure date selector, live booking date preview, duplicate prevention, and holiday-to-journey linkage; 39/39 tests pass.
+Next: STAGE 6 - GOOGLE OAUTH + CALENDAR SYNC (Sections 10, 11, 12: OAuth connect/callback/disconnect, token refresh, Google Calendar event creation on expected booking date, reminders, sync lifecycle, error recovery, mocked Google API tests).

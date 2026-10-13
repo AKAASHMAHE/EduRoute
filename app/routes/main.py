@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
-from app.models import db, Journey
+from app.models import db, Journey, Holiday, CalendarEventSync
 from app.services.booking_service import enrich_journey_data, calculate_booking_date
 from app.utils.validators import validate_journey_input
 from app.utils.helpers import filter_and_sort_journeys, get_dashboard_summary_stats
@@ -86,6 +86,15 @@ def add_journey():
         )
 
         db.session.add(new_journey)
+        db.session.flush()
+
+        # Initialize calendar sync state record
+        sync = CalendarEventSync(
+            journey_id=new_journey.id,
+            calendar_id=current_app.config.get("GOOGLE_CALENDAR_ID", "primary"),
+            status=CalendarEventSync.STATUS_NOT_SYNCED,
+        )
+        db.session.add(sync)
         db.session.commit()
 
         expected_date = calculate_booking_date(journey_date_obj, booking_window)
@@ -96,6 +105,123 @@ def add_journey():
         return redirect(url_for("main.dashboard"))
 
     return render_template("add_journey.html", errors={}, form_data={}, booking_window=booking_window)
+
+
+@main_bp.route("/journey/plan-from-holiday", methods=["GET", "POST"])
+def plan_from_holiday():
+    """Plan a train journey linked to a verified, confirmed academic holiday."""
+    booking_window = current_app.config.get("BOOKING_WINDOW_DAYS", 60)
+    confirmed_holidays = Holiday.query.filter_by(status="CONFIRMED").order_by(Holiday.start_date.asc()).all()
+
+    holiday_id_arg = request.args.get("holiday_id", type=int)
+    selected_holiday = None
+    if holiday_id_arg:
+        selected_holiday = db.session.get(Holiday, holiday_id_arg)
+
+    if request.method == "POST":
+        form_data = request.form.to_dict()
+        reminder_enabled = True if request.form.get("reminder_enabled") in ["on", "true", "1", "True"] else False
+        form_data["reminder_enabled"] = reminder_enabled
+
+        holiday_id = request.form.get("holiday_id", type=int)
+        holiday = db.session.get(Holiday, holiday_id) if holiday_id else None
+
+        if not holiday:
+            flash("Please select a valid holiday.", "danger")
+            return render_template(
+                "plan_from_holiday.html",
+                holidays=confirmed_holidays,
+                selected_holiday=selected_holiday,
+                errors={"holiday_id": "Please select a holiday."},
+                form_data=form_data,
+                booking_window=booking_window,
+            )
+
+        if holiday.status != "CONFIRMED":
+            flash("Cannot plan journeys from unconfirmed holidays. Please review and confirm the holiday first.", "danger")
+            return redirect(url_for("calendar.review_holidays"))
+
+        is_valid, errors = validate_journey_input(form_data)
+
+        # Validate that travel date is within or matching holiday range
+        travel_date_str = form_data.get("journey_date", "")
+        if travel_date_str and not errors.get("journey_date"):
+            travel_date_obj = datetime.strptime(travel_date_str, "%Y-%m-%d").date()
+            if travel_date_obj < holiday.start_date or travel_date_obj > holiday.end_date:
+                errors["journey_date"] = (
+                    f"Selected travel date must be within holiday period ({holiday.start_date.strftime('%d %b %Y')} "
+                    f"to {holiday.end_date.strftime('%d %b %Y')})."
+                )
+                is_valid = False
+
+        # Duplicate prevention check
+        if is_valid:
+            travel_date_obj = datetime.strptime(travel_date_str, "%Y-%m-%d").date()
+            existing_trip = Journey.query.filter_by(
+                source=form_data["source"].strip(),
+                destination=form_data["destination"].strip(),
+                journey_date=travel_date_obj,
+                holiday_id=holiday.id,
+            ).first()
+            if existing_trip:
+                errors["general"] = "A planned journey for this holiday, route, and date already exists."
+                is_valid = False
+
+        if not is_valid:
+            flash(errors.get("general") or "Please correct the errors in the form.", "danger")
+            return render_template(
+                "plan_from_holiday.html",
+                holidays=confirmed_holidays,
+                selected_holiday=holiday,
+                errors=errors,
+                form_data=form_data,
+                booking_window=booking_window,
+            )
+
+        new_journey = Journey(
+            trip_name=form_data["trip_name"].strip(),
+            source=form_data["source"].strip(),
+            destination=form_data["destination"].strip(),
+            train_name=form_data.get("train_name", "").strip() or None,
+            journey_date=travel_date_obj,
+            reminder_enabled=reminder_enabled,
+            holiday_id=holiday.id,
+        )
+        db.session.add(new_journey)
+        db.session.flush()
+
+        sync = CalendarEventSync(
+            journey_id=new_journey.id,
+            calendar_id=current_app.config.get("GOOGLE_CALENDAR_ID", "primary"),
+            status=CalendarEventSync.STATUS_NOT_SYNCED,
+        )
+        db.session.add(sync)
+        db.session.commit()
+
+        expected_date = calculate_booking_date(travel_date_obj, booking_window)
+        flash(
+            f"Journey for '{holiday.name}' planned successfully! Expected booking date: {expected_date.strftime('%d %b %Y')}",
+            "success",
+        )
+        return redirect(url_for("main.dashboard"))
+
+    # Initial GET form pre-population
+    form_data = {}
+    if selected_holiday:
+        form_data = {
+            "trip_name": f"{selected_holiday.name} Trip",
+            "journey_date": selected_holiday.start_date.strftime("%Y-%m-%d"),
+            "reminder_enabled": True,
+        }
+
+    return render_template(
+        "plan_from_holiday.html",
+        holidays=confirmed_holidays,
+        selected_holiday=selected_holiday,
+        errors={},
+        form_data=form_data,
+        booking_window=booking_window,
+    )
 
 
 @main_bp.route("/journey/<int:journey_id>")
