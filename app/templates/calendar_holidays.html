@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}{{ calendar.calendar_label }} - Details{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('calendar.list_calendars') }}">Academic Calendars</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ calendar.calendar_label }}</li>
+            </ol>
+        </nav>
+
+        <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h3 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-file-earmark-pdf text-danger me-2"></i>{{ calendar.calendar_label }}
+                </h3>
+                <span class="badge {% if calendar.status == 'PROCESSED' %}bg-success{% elif calendar.status == 'PROCESSING' %}bg-info{% else %}bg-danger{% endif %} px-3 py-2 fs-7 rounded-pill">
+                    {{ calendar.status }}
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <small class="text-muted text-uppercase fw-bold d-block">Source Document</small>
+                            <span class="fw-semibold text-truncate d-block" title="{{ calendar.filename }}">{{ calendar.filename }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <small class="text-muted text-uppercase fw-bold d-block">Uploaded Date</small>
+                            <span class="fw-semibold">{{ calendar.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <small class="text-muted text-uppercase fw-bold d-block">Extracted Holidays</small>
+                            <span class="fw-bold text-primary fs-5">{{ calendar.holidays | length }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {% if calendar.error_message %}
+                    <div class="alert alert-danger rounded-3 mb-4">
+                        <strong>Extraction Message:</strong> {{ calendar.error_message }}
+                    </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Detected Holiday Candidates</h5>
+                    <a href="{{ url_for('calendar.review_holidays', calendar_id=calendar.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-check2-circle me-1"></i> Review / Edit Candidates
+                    </a>
+                </div>
+
+                {% if calendar.holidays %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Holiday Name</th>
+                                    <th>Date Range</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for h in calendar.holidays %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ h.name }}</td>
+                                        <td>
+                                            {{ h.start_date.strftime('%d %b %Y') }}
+                                            {% if h.is_multi_day %}
+                                                to {{ h.end_date.strftime('%d %b %Y') }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">{{ h.duration_days }} day{{ 's' if h.duration_days > 1 else '' }}</span>
+                                        </td>
+                                        <td>
+                                            {% if h.status == 'CONFIRMED' %}
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle">Confirmed</span>
+                                            {% elif h.status == 'REJECTED' %}
+                                                <span class="badge bg-secondary">Rejected</span>
+                                            {% else %}
+                                                <span class="badge bg-warning-subtle text-dark border border-warning-subtle">Unconfirmed</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-light border text-center py-4 text-muted">
+                        No holidays detected or unconfirmed holidays have been cleared.
+                    </div>
+                {% endif %}
+
+                <div class="pt-3 border-top mt-4 d-flex justify-content-between">
+                    <a href="{{ url_for('calendar.list_calendars') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Calendars
+                    </a>
+                    <form action="{{ url_for('calendar.reprocess_calendar', calendar_id=calendar.id) }}" method="POST" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Reprocess Calendar PDF
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

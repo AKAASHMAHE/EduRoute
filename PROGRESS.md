@@ -9,3 +9,7 @@ Next: STAGE 3 - FOUNDATION (Sections 14, 15: schema extensions, models for Acade
 Stage: STAGE 3 - FOUNDATION
 Result: Added all Stage 3 models (AcademicCalendar, Holiday, GoogleCalendarConnection, CalendarEventSync, Journey link), non-destructive migration runner, config & env extensions, requirements; 29/29 tests pass.
 Next: STAGE 4 - PDF UPLOAD + HOLIDAY EXTRACTION + REVIEW (Sections 7, 8: PDF upload validation with %PDF signature, text extraction, multi-format holiday detection, UNCONFIRMED review UI with bulk confirm/reject/edit, tests with synthetic fixtures).
+
+Stage: STAGE 4 - PDF UPLOAD + HOLIDAY EXTRACTION + REVIEW
+Result: Built PDF upload with %PDF signature and size checks, text extraction with PyMuPDF/fallback, multi-format holiday detection, review/edit/bulk confirm UI, and non-destructive reprocessing; 33/33 tests pass.
+Next: STAGE 5 - HOLIDAY-BASED JOURNEY PLANNING (Section 9: List confirmed holidays, travel date picker inside range, trip details form with live preview, reject unconfirmed/duplicates, link Journey to Holiday).

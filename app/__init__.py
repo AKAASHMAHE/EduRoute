@@ -6,6 +6,7 @@ from app.models import db
 from app.utils.csrf import csrf
 from app.routes.main import main_bp
 from app.routes.api import api_bp
+from app.routes.academic_calendar import calendar_bp
 from app.utils.helpers import format_date_human
 
 
@@ -33,6 +34,7 @@ def create_app(config_class=Config):
     # Register Blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(calendar_bp)
 
     # Custom Jinja filters and context processors
     app.jinja_env.filters["format_date"] = format_date_human

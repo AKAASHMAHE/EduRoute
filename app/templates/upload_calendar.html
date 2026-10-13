@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Academic Calendar - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('calendar.list_calendars') }}">Academic Calendars</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Upload PDF</li>
+            </ol>
+        </nav>
+
+        <div class="card border-0 shadow rounded-3">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="card-title fw-bold mb-0">
+                    <i class="bi bi-cloud-arrow-up-fill me-2"></i>Upload Academic Calendar PDF
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('calendar.upload_calendar') }}" method="POST" enctype="multipart/form-data" id="uploadCalendarForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- Calendar Label -->
+                    <div class="mb-3">
+                        <label for="calendar_label" class="form-label fw-bold">Calendar Label / Academic Year <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="calendar_label" name="calendar_label" placeholder="e.g. University Academic Calendar 2026-2027" value="{{ calendar_label }}" required>
+                        <div class="form-text">Used to resolve missing years for extracted dates (e.g. "15 Aug").</div>
+                    </div>
+
+                    <!-- PDF File Input -->
+                    <div class="mb-4">
+                        <label for="calendar_file" class="form-label fw-bold">Select PDF Document <span class="text-danger">*</span></label>
+                        <input class="form-control form-control-lg" type="file" id="calendar_file" name="calendar_file" accept=".pdf,application/pdf" required>
+                        <div class="form-text mt-2">
+                            <i class="bi bi-info-circle me-1"></i>Only genuine digital PDF documents up to 10 MB are supported. Magic byte signature (<code>%PDF-</code>) is strictly enforced.
+                        </div>
+                    </div>
+
+                    <!-- Information Alert on Scanned Documents -->
+                    <div class="alert alert-info border-0 rounded-3 small mb-4">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-lightbulb-fill text-info fs-5 me-2 mt-1"></i>
+                            <div>
+                                <strong>Digital PDF Required:</strong> Scanned paper documents or photo-only PDFs without a digital text layer cannot be parsed by text extraction. Scanned PDFs will be identified and require either digital text or manual holiday entry.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('calendar.list_calendars') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg px-4" id="submitBtn">
+                            <i class="bi bi-upload me-1"></i> Upload & Extract Holidays
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
