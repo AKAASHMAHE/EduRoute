@@ -21,3 +21,6 @@ Next: STAGE 6 - GOOGLE OAUTH + CALENDAR SYNC (Sections 10, 11, 12: OAuth connect
 Stage: STAGE 6 - GOOGLE OAUTH + CALENDAR SYNC
 Result: Implemented OAuth lifecycle (state validation, token refresh, connect/disconnect), event synchronization on expected booking date with reminder overrides, repeat update without duplicates, missing event recreation, safe error recovery; 46/46 tests pass.
 Next: STAGE 7 - UI + SECURITY + REGRESSION + DOCS (Sections 13, 16, 17, 19: Navigation bar, dashboard sync alerts & indicators, journey detail sync metadata/retry, security hardening, full test suite pass, live server smoke test, README & documentation).
+Stage: STAGE 7 - UI + SECURITY + REGRESSION + DOCS
+Result: Added journey_detail sync panel + holiday badge, updated navbar, wrote README.md, smoke-tested all pages (7/7 → 200), 46/46 tests pass.
+Next: FINAL REPORT
