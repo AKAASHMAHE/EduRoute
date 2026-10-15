@@ -114,6 +114,102 @@
                     </div>
                 </div>
 
+                <!-- Holiday Link Badge (if linked to a holiday) -->
+                {% if journey.holiday_name %}
+                <div class="alert alert-success border-0 rounded-3 d-flex align-items-center mb-4 py-2">
+                    <i class="bi bi-calendar2-heart-fill text-success fs-5 me-2"></i>
+                    <div>
+                        <span class="fw-semibold">Academic Holiday:</span>
+                        <span class="badge bg-success ms-2">{{ journey.holiday_name }}</span>
+                        <small class="text-muted ms-2">This trip was planned from a confirmed academic holiday.</small>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Google Calendar Sync Panel -->
+                <div class="card border-0 rounded-3 mb-4"
+                     style="background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%); border: 1px solid #d0e8f5 !important;">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold text-dark mb-3">
+                            <i class="bi bi-calendar-check text-primary me-2"></i>Google Calendar Sync
+                        </h6>
+
+                        {% set sync_status = journey.sync_status if journey.sync_status else 'NOT_CONNECTED' %}
+
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <span class="fw-semibold">Status:</span>
+                            {% if sync_status == 'SYNCED' %}
+                                <span class="badge bg-success px-3"><i class="bi bi-check-circle me-1"></i>Synced</span>
+                            {% elif sync_status == 'SYNC_FAILED' %}
+                                <span class="badge bg-danger px-3"><i class="bi bi-x-circle me-1"></i>Sync Failed</span>
+                            {% elif sync_status == 'REAUTH_REQUIRED' %}
+                                <span class="badge bg-warning text-dark px-3"><i class="bi bi-key me-1"></i>Re-auth Required</span>
+                            {% elif sync_status == 'EXTERNAL_EVENT_MISSING' %}
+                                <span class="badge bg-secondary px-3"><i class="bi bi-cloud-slash me-1"></i>Event Missing on Google</span>
+                            {% elif sync_status == 'SYNC_PENDING' %}
+                                <span class="badge bg-info text-dark px-3"><i class="bi bi-clock me-1"></i>Sync Pending</span>
+                            {% elif sync_status == 'NOT_SYNCED' %}
+                                <span class="badge bg-secondary px-3"><i class="bi bi-dash-circle me-1"></i>Not Synced</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark border px-3"><i class="bi bi-plug me-1"></i>Google Not Connected</span>
+                            {% endif %}
+
+                            {% if journey.last_synced %}
+                                <small class="text-muted">Last synced: {{ journey.last_synced }}</small>
+                            {% endif %}
+                        </div>
+
+                        {% if journey.sync_error %}
+                        <div class="alert alert-danger py-2 px-3 small mb-2">
+                            <i class="bi bi-exclamation-triangle me-1"></i>{{ journey.sync_error }}
+                        </div>
+                        {% endif %}
+
+                        {% if journey.sync_event_id and sync_status == 'SYNCED' %}
+                        <div class="mb-2">
+                            <small class="text-muted">Event ID: <code>{{ journey.sync_event_id[:20] }}…</code></small>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            {% if google_connected %}
+                                <form action="{{ url_for('google.sync_journey', journey_id=journey.id) }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    {% if sync_status in ['SYNCED', 'EXTERNAL_EVENT_MISSING'] %}
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-arrow-repeat me-1"></i>Re-sync Event
+                                        </button>
+                                    {% elif sync_status in ['SYNC_FAILED', 'REAUTH_REQUIRED'] %}
+                                        <button type="submit" class="btn btn-sm btn-warning">
+                                            <i class="bi bi-arrow-clockwise me-1"></i>Retry Sync
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-calendar-plus me-1"></i>Sync to Calendar
+                                        </button>
+                                    {% endif %}
+                                </form>
+                                {% if sync_status == 'REAUTH_REQUIRED' %}
+                                <a href="{{ url_for('google.connect') }}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-key me-1"></i>Reconnect Google
+                                </a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ url_for('google.settings') }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-plug me-1"></i>Connect Google Calendar
+                                </a>
+                            {% endif %}
+                        </div>
+
+                        <p class="small text-muted mb-0 mt-2">
+                            <i class="bi bi-info-circle me-1"></i>
+                            The Calendar event is set on the <strong>expected booking date</strong>
+                            (Journey Date − {{ booking_window }} days). Booking availability must be
+                            verified on the official railway platform.
+                        </p>
+                    </div>
+                </div>
+
                 <!-- Action Controls Footer -->
                 <div class="d-flex flex-wrap justify-content-between align-items-center pt-3 border-top">
                     <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary mb-2 mb-sm-0">

@@ -26,6 +26,13 @@
                     <i class="bi bi-train-front me-1"></i>{{ journey.train_name }}
                 </div>
             {% endif %}
+            {% if journey.holiday_name %}
+                <div class="mt-1">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill fs-8">
+                        <i class="bi bi-calendar2-heart me-1"></i>{{ journey.holiday_name }}
+                    </span>
+                </div>
+            {% endif %}
         </div>
 
         <!-- Key Dates Grid -->
@@ -62,6 +69,31 @@
                 <div class="text-primary small text-center fw-semibold">
                     <i class="bi bi-hourglass-split me-1"></i>Booking opens in <strong>{{ journey.days_until_booking }}</strong> days
                 </div>
+            {% endif %}
+        </div>
+
+        <!-- Calendar Sync Status Indicator -->
+        <div class="text-center pt-1 border-top">
+            {% if journey.sync_status == 'SYNCED' %}
+                <span class="badge bg-success-subtle text-success fs-8">
+                    <i class="bi bi-google me-1"></i>Synced to Calendar
+                </span>
+            {% elif journey.sync_status == 'SYNC_FAILED' %}
+                <span class="badge bg-danger-subtle text-danger fs-8" title="{{ journey.sync_error or 'Sync failed' }}">
+                    <i class="bi bi-exclamation-circle me-1"></i>Sync Failed
+                </span>
+            {% elif journey.sync_status == 'REAUTH_REQUIRED' %}
+                <span class="badge bg-warning-subtle text-dark fs-8">
+                    <i class="bi bi-key me-1"></i>Reauth Needed
+                </span>
+            {% elif journey.sync_status == 'EXTERNAL_EVENT_MISSING' %}
+                <span class="badge bg-info-subtle text-dark fs-8">
+                    <i class="bi bi-question-circle me-1"></i>Event Missing
+                </span>
+            {% else %}
+                <span class="badge bg-light text-muted border fs-8">
+                    <i class="bi bi-cloud-slash me-1"></i>Not Synced
+                </span>
             {% endif %}
         </div>
     </div>

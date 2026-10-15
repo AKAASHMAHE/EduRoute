@@ -138,6 +138,20 @@ def enrich_journey_data(journey, today=None, booking_window_days=None):
     from app.services.reminder_service import is_reminder_active
     reminder_active, reminder_text = is_reminder_active(j_date, reminder_enabled, today)
 
+    # Holiday and Calendar Sync metadata
+    holiday_id = getattr(journey, "holiday_id", None) if hasattr(journey, "holiday_id") else (journey.get("holiday_id") if isinstance(journey, dict) else None)
+    holiday_name = None
+    if hasattr(journey, "holiday") and journey.holiday:
+        holiday_name = journey.holiday.name
+    elif isinstance(journey, dict):
+        holiday_name = journey.get("holiday_name")
+
+    sync_record = getattr(journey, "sync_record", None)
+    sync_status = sync_record.status if sync_record else (journey.get("sync_status", "NOT_SYNCED") if isinstance(journey, dict) else "NOT_SYNCED")
+    sync_error = sync_record.last_error if sync_record else (journey.get("sync_error") if isinstance(journey, dict) else None)
+    sync_event_id = sync_record.event_id if sync_record else (journey.get("sync_event_id") if isinstance(journey, dict) else None)
+    last_synced = sync_record.last_synced if sync_record else (journey.get("last_synced") if isinstance(journey, dict) else None)
+
     return {
         "id": journey.id if hasattr(journey, "id") else journey.get("id"),
         "trip_name": journey.trip_name if hasattr(journey, "trip_name") else journey.get("trip_name"),
@@ -158,5 +172,11 @@ def enrich_journey_data(journey, today=None, booking_window_days=None):
         "reminder_enabled": reminder_enabled,
         "reminder_active": reminder_active,
         "reminder_text": reminder_text,
+        "holiday_id": holiday_id,
+        "holiday_name": holiday_name,
+        "sync_status": sync_status,
+        "sync_error": sync_error,
+        "sync_event_id": sync_event_id,
+        "last_synced": last_synced,
         "raw_journey": journey,
     }
