@@ -1,4 +1,6 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
+from zoneinfo import ZoneInfo
+from flask import current_app
 import pandas as pd
 import numpy as np
 
@@ -110,3 +112,37 @@ def get_dashboard_summary_stats(enriched_journeys):
         "booking_soon": booking_soon,
         "completed": completed,
     }
+
+# Convert UTC datetime to configured timezone and format
+def utc_to_local(utc_dt, fmt="%d %b %Y, %I:%M %p"):
+    """Convert a UTC datetime (or ISO string) to the app's configured timezone.
+    Returns a formatted string using *fmt*.
+    """
+    from datetime import datetime, timezone, date
+    from zoneinfo import ZoneInfo
+    # Safely get timezone name, fallback if Flask app context missing
+    try:
+        from flask import current_app
+        tz_name = current_app.config.get("CALENDAR_EVENT_TIMEZONE", "Asia/Kolkata")
+    except Exception:
+        tz_name = "Asia/Kolkata"
+    if not utc_dt:
+        return ""
+    # Parse ISO string if needed
+    if isinstance(utc_dt, str):
+        try:
+            utc_dt = datetime.fromisoformat(utc_dt)
+        except ValueError:
+            return utc_dt
+    # Convert date objects to datetime at midnight UTC
+    if isinstance(utc_dt, date) and not isinstance(utc_dt, datetime):
+        utc_dt = datetime.combine(utc_dt, datetime.min.time())
+    # Ensure timezone-aware UTC
+    if utc_dt.tzinfo is None:
+        utc_dt = utc_dt.replace(tzinfo=timezone.utc)
+    try:
+        target_tz = ZoneInfo(tz_name)
+    except Exception:
+        target_tz = timezone.utc
+    local_dt = utc_dt.astimezone(target_tz)
+    return local_dt.strftime(fmt)

@@ -70,7 +70,7 @@
                                 </span>
                             </td>
                             <td class="small text-muted">
-                                {{ cal.created_at.strftime('%d %b %Y, %I:%M %p') if cal.created_at else '--' }}
+                                {{ cal.created_at|localtime if cal.created_at else '--' }}
                             </td>
                             <td class="text-end pe-3">
                                 <div class="btn-group btn-group-sm">

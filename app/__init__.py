@@ -9,7 +9,7 @@ from app.routes.api import api_bp
 from app.routes.academic_calendar import calendar_bp
 from app.routes.google_auth import google_bp
 from app.services.google_calendar_service import is_google_connected
-from app.utils.helpers import format_date_human
+from app.utils.helpers import format_date_human, utc_to_local
 
 
 def create_app(config_class=Config):
@@ -40,7 +40,7 @@ def create_app(config_class=Config):
     app.register_blueprint(google_bp)
 
     # Custom Jinja filters and context processors
-    app.jinja_env.filters["format_date"] = format_date_human
+    app.jinja_env.filters["localtime"] = utc_to_local
 
     @app.context_processor
     def inject_globals():

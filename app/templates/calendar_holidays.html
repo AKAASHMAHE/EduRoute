@@ -33,7 +33,7 @@
                     <div class="col-md-4">
                         <div class="p-3 border rounded bg-light">
                             <small class="text-muted text-uppercase fw-bold d-block">Uploaded Date</small>
-                            <span class="fw-semibold">{{ calendar.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+                            <span class="fw-semibold">{{ calendar.created_at|localtime if calendar.created_at else '--' }}</span>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -73,9 +73,9 @@
                                     <tr>
                                         <td class="fw-semibold">{{ h.name }}</td>
                                         <td>
-                                            {{ h.start_date.strftime('%d %b %Y') }}
+                                            {{ h.start_date|localtime }}
                                             {% if h.is_multi_day %}
-                                                to {{ h.end_date.strftime('%d %b %Y') }}
+                                                to {{ h.end_date|localtime }}
                                             {% endif %}
                                         </td>
                                         <td>

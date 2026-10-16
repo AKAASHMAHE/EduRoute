@@ -49,7 +49,7 @@
                             <div class="col-md-6">
                                 <small class="text-muted text-uppercase fw-bold d-block">Connected On</small>
                                 <span class="fw-semibold text-dark">
-                                    {{ connection.connected_at.strftime('%d %b %Y, %I:%M %p') if connection.connected_at else '--' }}
+                                    {{ connection.connected_at|localtime if connection.connected_at else '--' }}
                                 </span>
                             </div>
                             <div class="col-md-4">

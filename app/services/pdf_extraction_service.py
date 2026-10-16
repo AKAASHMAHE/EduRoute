@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def extract_text_with_pymupdf(filepath):
     """Attempt text extraction via PyMuPDF (fitz)."""
     try:
-        import fitz  # PyMuPDF
+        import pymupdf as fitz  # PyMuPDF
     except ImportError:
         return None, "PyMuPDF (fitz) is not installed."
 
@@ -128,7 +128,7 @@ def extract_pdf_text(filepath):
 
     # Try PyMuPDF first
     try:
-        import fitz
+        import pymupdf as fitz
         success, text, err = extract_text_with_pymupdf(path)
         if success or err and "scanned" in err.lower():
             return success, text, err

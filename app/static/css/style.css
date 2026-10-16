@@ -75,3 +75,15 @@ body {
     background-color: var(--primary-hover);
     border-color: var(--primary-hover);
 }
+.navbar .nav-link {
+       color: #ffffff !important;
+       opacity: 1 !important;
+       font-weight: 500;
+   }
+   .navbar .nav-link:hover {
+       color: #ffe082 !important;
+   }
+   .navbar .nav-link.active {
+       color: #ffffff !important;
+       border-bottom: 2px solid #ffffff;
+   }

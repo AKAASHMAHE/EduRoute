@@ -96,9 +96,9 @@
                                     <small class="text-muted">{{ h.category or 'Holiday' }}</small>
                                 </td>
                                 <td>
-                                    <span class="fw-semibold">{{ h.start_date.strftime('%d %b %Y') }}</span>
+                                    <span class="fw-semibold">{{ h.start_date|localtime }}</span>
                                     {% if h.is_multi_day %}
-                                        <small class="text-muted d-block">to {{ h.end_date.strftime('%d %b %Y') }}</small>
+                                        <small class="text-muted d-block">to {{ h.end_date|localtime }}</small>
                                     {% endif %}
                                 </td>
                                 <td>
